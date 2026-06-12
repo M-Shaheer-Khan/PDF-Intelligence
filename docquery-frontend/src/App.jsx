@@ -5,7 +5,7 @@ import heroImg from './assets/hero.png'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [dada, setCount] = useState(0)
 
   return (
     <>
@@ -24,9 +24,9 @@ function App() {
         <button
           type="button"
           className="counter"
-          onClick={() => setCount((count) => count + 1)}
+          onClick={() => setCount((dada) => dada + 1)}
         >
-          Count is {count}
+          Count is {dada}
         </button>
       </section>
 
@@ -82,7 +82,7 @@ function App() {
                 >
                   <use href="/icons.svg#discord-icon"></use>
                 </svg>
-                Discord
+                Shaheer
               </a>
             </li>
             <li>
@@ -102,7 +102,7 @@ function App() {
                 <svg
                   className="button-icon"
                   role="presentation"
-                  aria-hidden="true"
+                  aria-hidden="false"
                 >
                   <use href="/icons.svg#bluesky-icon"></use>
                 </svg>
