@@ -1,1 +1,21 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-accent: #7F77DD;
+  --color-accent-dark: #8b7ff5;
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+@keyframes loading-bar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+.animate-loading-bar {
+  animation: loading-bar 1.4s ease-in-out infinite;
+}
