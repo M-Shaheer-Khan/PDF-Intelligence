@@ -34,7 +34,7 @@ export default function Sidebar({ document, onFileSelect, onDocumentReady }) {
         </label>
 
         <button className="text-[13px] font-medium text-accent dark:text-accent-dark border border-[#e5e5e3] dark:border-[#2a2438] rounded-lg py-2 hover:bg-[#f5f5f3] dark:hover:bg-[#1a1a24] transition-colors">
-          Load demo document
+          Load document
         </button>
       </div>
 
