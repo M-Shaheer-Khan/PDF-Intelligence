@@ -49,6 +49,7 @@ function App() {
             <li>
               <a href="https://react.dev/" target="_blank">
                 <img className="button-icon" src={reactLogo} alt="" />
+                
                 Learn more
               </a>
             </li>
@@ -64,6 +65,7 @@ function App() {
             <li>
               <a href="https://github.com/vitejs/vite" target="_blank">
                 <svg
+                
                   className="button-icon"
                   role="presentation"
                   aria-hidden="true"
