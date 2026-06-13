@@ -1,3 +1,5 @@
+import { pdfjs } from "react-pdf";
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
