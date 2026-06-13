@@ -5,56 +5,81 @@ import EmptyState from "./components/EmptyState";
 import ProcessingState from "./components/ProcessingState";
 import ChatWindow from "./components/ChatWindow";
 import InputBar from "./components/InputBar";
+import { uploadPDF, queryDocument } from "./api";
 
 export default function App() {
   const [aiPolishing, setAiPolishing] = useState(false);
-  const [document, setDocument] = useState(null); // null | {name, pages, status: 'processing'|'ready'}
+  const [document, setDocument] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [loadingAnswer, setLoadingAnswer] = useState(false);
 
-  const handleFileSelect = (file) => {
-    setDocument({ name: file.name, pages: 42, status: "processing" });
-    // simulate: after processing finishes, set status to 'ready'
+  const handleFileSelect = async (file) => {
+    setDocument({ name: file.name, pages: "...", status: "processing" });
+    try {
+      const data = await uploadPDF(file);
+      setDocument({
+        name: data.filename,
+        pages: data.total_pages,
+        docId: data.doc_id,
+        status: "processing", // ProcessingState still shows animation
+      });
+      // Store docId for queries once "ready"
+      window.__lastDoc = data; // temp, replace with proper state below
+      setDocument((d) => ({ ...d, docId: data.doc_id }));
+    } catch (err) {
+      console.error(err);
+      setDocument(null);
+      alert("Upload failed. Check backend is running.");
+    }
   };
 
   const handleDocumentReady = () => {
     setDocument((d) => (d ? { ...d, status: "ready" } : d));
   };
 
-  const handleSend = (text) => {
-    if (!text.trim()) return;
+  const handleSend = async (text) => {
+    if (!text.trim() || !document?.docId) return;
     setMessages((m) => [...m, { role: "user", text }]);
-    // TODO: call backend /query endpoint, then push AI response
-  };
-
-  const handleSuggestionClick = (text) => {
-    handleSend(text);
+    setLoadingAnswer(true);
+    try {
+      const data = await queryDocument(document.docId, text, aiPolishing);
+      setMessages((m) => [
+        ...m,
+        {
+          role: "ai",
+          text: data.answer,
+          pageRefs: data.page_refs,
+          followUps: data.follow_ups,
+        },
+      ]);
+    } catch (err) {
+      console.error(err);
+      setMessages((m) => [
+        ...m,
+        { role: "ai", text: "Something went wrong. Please try again." },
+      ]);
+    } finally {
+      setLoadingAnswer(false);
+    }
   };
 
   return (
     <div className={aiPolishing ? "dark" : ""}>
       <div className="flex h-screen w-full bg-white dark:bg-[#0a0a0f] text-[#1a1a1a] dark:text-[#f0eefc]">
-        <Sidebar
-          document={document}
-          onFileSelect={handleFileSelect}
-          onDocumentReady={handleDocumentReady}
-        />
+        <Sidebar document={document} onFileSelect={handleFileSelect} />
         <div className="flex flex-col flex-1">
           <Header aiPolishing={aiPolishing} setAiPolishing={setAiPolishing} />
-
           <div className="flex-1 overflow-y-auto relative">
-            {!document && (
-              <EmptyState onSuggestionClick={handleSuggestionClick} />
-            )}
+            {!document && <EmptyState onSuggestionClick={handleSend} />}
             {document?.status === "processing" && (
               <ProcessingState onComplete={handleDocumentReady} />
             )}
             {document?.status === "ready" && (
-              <ChatWindow messages={messages} />
+              <ChatWindow messages={messages} onChipClick={handleSend} />
             )}
           </div>
-
           <InputBar
-            disabled={!document || document.status !== "ready"}
+            disabled={!document || document.status !== "ready" || loadingAnswer}
             onSend={handleSend}
           />
         </div>
