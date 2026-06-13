@@ -5,15 +5,21 @@ import EmptyState from "./components/EmptyState";
 import ProcessingState from "./components/ProcessingState";
 import ChatWindow from "./components/ChatWindow";
 import InputBar from "./components/InputBar";
+import PDFViewer from "./components/PDFViewer";
 import { uploadPDF, queryDocument } from "./api";
 
 export default function App() {
   const [aiPolishing, setAiPolishing] = useState(false);
   const [document, setDocument] = useState(null);
+  const [pdfFile, setPdfFile] = useState(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [numPages, setNumPages] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loadingAnswer, setLoadingAnswer] = useState(false);
 
   const handleFileSelect = async (file) => {
+    setPdfFile(file);
+    setPageNumber(1);
     setDocument({ name: file.name, pages: "...", status: "processing" });
     try {
       const data = await uploadPDF(file);
@@ -21,14 +27,12 @@ export default function App() {
         name: data.filename,
         pages: data.total_pages,
         docId: data.doc_id,
-        status: "processing", // ProcessingState still shows animation
+        status: "processing",
       });
-      // Store docId for queries once "ready"
-      window.__lastDoc = data; // temp, replace with proper state below
-      setDocument((d) => ({ ...d, docId: data.doc_id }));
     } catch (err) {
       console.error(err);
       setDocument(null);
+      setPdfFile(null);
       alert("Upload failed. Check backend is running.");
     }
   };
@@ -45,22 +49,18 @@ export default function App() {
       const data = await queryDocument(document.docId, text, aiPolishing);
       setMessages((m) => [
         ...m,
-        {
-          role: "ai",
-          text: data.answer,
-          pageRefs: data.page_refs,
-          followUps: data.follow_ups,
-        },
+        { role: "ai", text: data.answer, pageRefs: data.page_refs, followUps: data.follow_ups },
       ]);
     } catch (err) {
       console.error(err);
-      setMessages((m) => [
-        ...m,
-        { role: "ai", text: "Something went wrong. Please try again." },
-      ]);
+      setMessages((m) => [...m, { role: "ai", text: "Something went wrong. Please try again." }]);
     } finally {
       setLoadingAnswer(false);
     }
+  };
+
+  const handlePageRefClick = (pageNum) => {
+    if (pageNum && pageNum >= 1) setPageNumber(pageNum);
   };
 
   return (
@@ -75,7 +75,12 @@ export default function App() {
               <ProcessingState onComplete={handleDocumentReady} />
             )}
             {document?.status === "ready" && (
-              <ChatWindow messages={messages} onChipClick={handleSend} />
+              <ChatWindow
+                messages={messages}
+                onChipClick={handleSend}
+                onPageRefClick={handlePageRefClick}
+                loadingAnswer={loadingAnswer}
+              />
             )}
           </div>
           <InputBar
@@ -83,6 +88,15 @@ export default function App() {
             onSend={handleSend}
           />
         </div>
+        {document?.status === "ready" && (
+          <PDFViewer
+            file={pdfFile}
+            pageNumber={pageNumber}
+            setPageNumber={setPageNumber}
+            numPages={numPages}
+            setNumPages={setNumPages}
+          />
+        )}
       </div>
     </div>
   );
