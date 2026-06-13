@@ -1,7 +1,7 @@
 import { Sparkles } from "lucide-react";
 import Chip from "./Chip";
 
-export default function MessageBubble({ message, onChipClick }) {
+export default function MessageBubble({ message, onChipClick, onPageRefClick }) {
   const { role, text, pageRefs, followUps } = message;
 
   if (role === "user") {
@@ -25,11 +25,14 @@ export default function MessageBubble({ message, onChipClick }) {
       </div>
       {pageRefs?.length > 0 && (
         <div className="flex gap-2 flex-wrap">
-          {pageRefs.map((ref) => (
-            <Chip key={ref} variant="pageRef" onClick={() => onChipClick?.(ref)}>
-              {ref}
-            </Chip>
-          ))}
+          {pageRefs.map((ref) => {
+            const pageNum = parseInt(ref.replace(/[^0-9]/g, ""), 10);
+            return (
+              <Chip key={ref} variant="pageRef" onClick={() => onPageRefClick?.(pageNum)}>
+                {ref}
+              </Chip>
+            );
+          })}
         </div>
       )}
       {followUps?.length > 0 && (
