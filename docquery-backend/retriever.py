@@ -25,5 +25,7 @@ def retrieve_chunks(doc_id: str, query: str, top_k: int = 5):
     chunks = []
     for doc_text, meta in zip(documents, metadatas):
         chunks.append({"text": doc_text, "page": meta["page"]})
+        # Optional: include relevance score if needed
+        # score = results["distances"][0][i]    
 
     return chunks
