@@ -1,19 +1,13 @@
 import os
 import json
-import google.generativeai as genai
+from groq import Groq
 from dotenv import load_dotenv
 
 load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-model = genai.GenerativeModel("gemini-2.0-flash")
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
 def generate_answer(query: str, chunks: list, ai_polishing: bool = False):
-    """
-    chunks: list of {text, page}
-    Returns: {answer, page_refs, follow_ups, web_grounded}
-    """
     context = "\n\n".join(
         f"[Page {c['page']}]: {c['text']}" for c in chunks
     )
@@ -29,7 +23,7 @@ User question: {query}
 
 Instructions:
 - Answer the question using the context above as the primary source.
-- If the context is insufficient or the question goes beyond it, you may use your own general knowledge to fill gaps — clearly this is "web-grounded" reasoning.
+- If the context is insufficient or the question goes beyond it, you may use your own general knowledge to fill gaps.
 - Polish the answer: make it clear, well-structured, and professional.
 - Then generate exactly 3 relevant follow-up questions the user might ask next.
 - Indicate whether you used outside knowledge beyond the provided context.
@@ -63,10 +57,14 @@ Respond ONLY in this JSON format, no markdown, no extra text:
 }}
 """
 
-    response = model.generate_content(prompt)
-    raw = response.text.strip()
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.3,
+    )
 
-    # Clean up potential markdown fences
+    raw = response.choices[0].message.content.strip()
+
     if raw.startswith("```"):
         raw = raw.strip("`")
         if raw.startswith("json"):
@@ -76,11 +74,7 @@ Respond ONLY in this JSON format, no markdown, no extra text:
     try:
         parsed = json.loads(raw)
     except json.JSONDecodeError:
-        parsed = {
-            "answer": raw,
-            "follow_ups": [],
-            "web_grounded": False,
-        }
+        parsed = {"answer": raw, "follow_ups": [], "web_grounded": False}
 
     page_refs = [f"Page {p}" for p in pages_used]
 
