@@ -1,17 +1,14 @@
-import os
-import shutil
 import uuid
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from ingest import process_pdf, delete_document
+from ingest import process_pdf_bytes, delete_document
 from retriever import retrieve_chunks
 from answer import generate_answer
 
 app = FastAPI(title="DocQuery API")
 
-# Allow the React dev server to call this API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
@@ -19,9 +16,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-UPLOAD_DIR = "./uploads"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 class QueryRequest(BaseModel):
@@ -36,12 +30,9 @@ async def upload_pdf(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Only PDF files are supported")
 
     doc_id = str(uuid.uuid4())
-    file_path = os.path.join(UPLOAD_DIR, f"{doc_id}.pdf")
+    file_bytes = await file.read()
 
-    with open(file_path, "wb") as f:
-        shutil.copyfileobj(file.file, f)
-
-    result = process_pdf(file_path, doc_id)
+    result = process_pdf_bytes(file_bytes, doc_id)
 
     return {
         "doc_id": doc_id,
@@ -65,9 +56,6 @@ async def query_document(req: QueryRequest):
 @app.delete("/document/{doc_id}")
 async def remove_document(doc_id: str):
     delete_document(doc_id)
-    file_path = os.path.join(UPLOAD_DIR, f"{doc_id}.pdf")
-    if os.path.exists(file_path):
-        os.remove(file_path)
     return {"status": "deleted"}
 
 

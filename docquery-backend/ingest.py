@@ -18,15 +18,15 @@ splitter = RecursiveCharacterTextSplitter(
 )
 
 
-def process_pdf(file_path: str, doc_id: str):
+def process_pdf_bytes(file_bytes: bytes, doc_id: str):
     """
-    Extracts text page-by-page, chunks it, and stores chunks in ChromaDB
-    with page number metadata. Returns total page count.
+    Extracts text page-by-page from in-memory PDF bytes, chunks it,
+    and stores chunks in ChromaDB with page number metadata.
+    Returns total page count and chunk count.
     """
-    doc = fitz.open(file_path)
+    doc = fitz.open(stream=file_bytes, filetype="pdf")
     total_pages = doc.page_count
 
-    # Get or create a collection for this document
     collection = client.get_or_create_collection(
         name=doc_id,
         embedding_function=embedding_fn,
@@ -45,7 +45,7 @@ def process_pdf(file_path: str, doc_id: str):
         page_chunks = splitter.split_text(text)
         for chunk in page_chunks:
             chunks.append(chunk)
-            metadatas.append({"page": page_num + 1})  # 1-indexed pages
+            metadatas.append({"page": page_num + 1})
             ids.append(str(uuid.uuid4()))
 
     if chunks:

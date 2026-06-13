@@ -14,12 +14,14 @@ export default function App() {
   const [pdfFile, setPdfFile] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [numPages, setNumPages] = useState(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [loadingAnswer, setLoadingAnswer] = useState(false);
 
   const handleFileSelect = async (file) => {
     setPdfFile(file);
     setPageNumber(1);
+    setPreviewOpen(false);
     setDocument({ name: file.name, pages: "...", status: "processing" });
     try {
       const data = await uploadPDF(file);
@@ -49,34 +51,39 @@ export default function App() {
       const data = await queryDocument(document.docId, text, aiPolishing);
       setMessages((m) => [
         ...m,
-        { role: "ai", text: data.answer, pageRefs: data.page_refs, followUps: data.follow_ups },
+        {
+          role: "ai",
+          text: data.answer,
+          pageRefs: data.page_refs,
+          followUps: data.follow_ups,
+        },
       ]);
     } catch (err) {
       console.error(err);
-      setMessages((m) => [...m, { role: "ai", text: "Something went wrong. Please try again." }]);
+      setMessages((m) => [
+        ...m,
+        { role: "ai", text: "Something went wrong. Please try again." },
+      ]);
     } finally {
       setLoadingAnswer(false);
     }
   };
 
   const handlePageRefClick = (pageNum) => {
-    if (pageNum && pageNum >= 1) setPageNumber(pageNum);
-  };
-
-  const [previewOpen, setPreviewOpen] = useState(false);
-
-  const handlePageRefClick = (pageNum) => {
     if (pageNum && pageNum >= 1) {
-     setPageNumber(pageNum);
+      setPageNumber(pageNum);
       setPreviewOpen(true);
-   }
+    }
   };
+
   return (
     <div className={aiPolishing ? "dark" : ""}>
       <div className="flex h-screen w-full bg-white dark:bg-[#0a0a0f] text-[#1a1a1a] dark:text-[#f0eefc]">
         <Sidebar document={document} onFileSelect={handleFileSelect} />
-        <div className="flex flex-col flex-1">
+
+        <div className="flex flex-col flex-1 relative">
           <Header aiPolishing={aiPolishing} setAiPolishing={setAiPolishing} />
+
           <div className="flex-1 overflow-y-auto relative">
             {!document && <EmptyState onSuggestionClick={handleSend} />}
             {document?.status === "processing" && (
@@ -91,20 +98,23 @@ export default function App() {
               />
             )}
           </div>
+
           <InputBar
             disabled={!document || document.status !== "ready" || loadingAnswer}
             onSend={handleSend}
           />
+
+          {previewOpen && (
+            <PDFViewer
+              file={pdfFile}
+              pageNumber={pageNumber}
+              setPageNumber={setPageNumber}
+              numPages={numPages}
+              setNumPages={setNumPages}
+              onClose={() => setPreviewOpen(false)}
+            />
+          )}
         </div>
-        {document?.status === "ready" && (
-          <PDFViewer
-            file={pdfFile}
-            pageNumber={pageNumber}
-            setPageNumber={setPageNumber}
-            numPages={numPages}
-            setNumPages={setNumPages}
-          />
-        )}
       </div>
     </div>
   );
