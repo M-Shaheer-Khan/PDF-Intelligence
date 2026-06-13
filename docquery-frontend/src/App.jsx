@@ -63,6 +63,14 @@ export default function App() {
     if (pageNum && pageNum >= 1) setPageNumber(pageNum);
   };
 
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  const handlePageRefClick = (pageNum) => {
+    if (pageNum && pageNum >= 1) {
+     setPageNumber(pageNum);
+      setPreviewOpen(true);
+   }
+  };
   return (
     <div className={aiPolishing ? "dark" : ""}>
       <div className="flex h-screen w-full bg-white dark:bg-[#0a0a0f] text-[#1a1a1a] dark:text-[#f0eefc]">

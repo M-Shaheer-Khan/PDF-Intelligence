@@ -33,9 +33,7 @@ export default function Sidebar({ document, onFileSelect, onDocumentReady }) {
           </span>
         </label>
 
-        <button className="text-[13px] font-medium text-accent dark:text-accent-dark border border-[#e5e5e3] dark:border-[#2a2438] rounded-lg py-2 hover:bg-[#f5f5f3] dark:hover:bg-[#1a1a24] transition-colors">
-          Load document
-        </button>
+        
       </div>
 
       {/* Active document */}
@@ -70,7 +68,7 @@ export default function Sidebar({ document, onFileSelect, onDocumentReady }) {
       {/* Footer */}
       <div className="mt-auto pt-4 border-t border-[#e5e5e3] dark:border-[#2a2438]">
         <p className="text-[11px] text-[#8a8a85] dark:text-[#6b6485]">
-          Model: Claude Sonnet · RAG + web grounding
+          Model: Groq- RAG + web grounding    
         </p>
       </div>
     </aside>
