@@ -47,3 +47,4 @@ export default function MessageBubble({ message, onChipClick, onPageRefClick }) 
     </div>
   );
 }
+

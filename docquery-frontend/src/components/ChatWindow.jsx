@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { Sparkles } from "lucide-react";
 import MessageBubble from "./MessageBubble";
 
-export default function ChatWindow({ messages, onChipClick, loadingAnswer }) {
+export default function ChatWindow({ messages, onChipClick, onPageRefClick, loadingAnswer }) {
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -12,9 +12,9 @@ export default function ChatWindow({ messages, onChipClick, loadingAnswer }) {
   return (
     <div className="h-full overflow-y-auto px-6 py-6 flex flex-col gap-5">
       {messages.map((m, i) => (
-        <MessageBubble key={i} message={m} onChipClick={onChipClick} />
+        <MessageBubble key={i} message={m} onChipClick={onChipClick} onPageRefClick={onPageRefClick} />
       ))}
-
+  
       {loadingAnswer && (
         <div className="flex flex-col gap-2 max-w-[85%]">
           <div className="flex items-center gap-1.5 text-[11px] text-[#8a8a85] dark:text-[#9d8fc7]">
