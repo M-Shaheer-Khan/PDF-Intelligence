@@ -1,5 +1,25 @@
-venv/
-.env
-__pycache__/
-chroma_db/
-*.pyc
+# Environment files (anywhere in project)
+**/.env
+**/.env.local
+**/.env.production
+
+# Python
+**/venv/
+**/__pycache__/
+**/*.pyc
+**/chroma_db/
+**/uploads/
+
+# Node
+**/node_modules/
+**/dist/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
