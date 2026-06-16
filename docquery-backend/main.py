@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from ingest import process_pdf_bytes, delete_document
 from retriever import retrieve_chunks
 from answer import generate_answer
+from database import save_document, save_chat, get_chats_for_document, get_all_documents
 
 app = FastAPI(title="DocQuery API")
 
@@ -34,6 +35,13 @@ async def upload_pdf(file: UploadFile = File(...)):
 
     result = process_pdf_bytes(file_bytes, doc_id)
 
+    save_document(
+        doc_id=doc_id,
+        filename=file.filename,
+        total_pages=result["total_pages"],
+        total_chunks=result["total_chunks"],
+    )
+
     return {
         "doc_id": doc_id,
         "filename": file.filename,
@@ -50,7 +58,30 @@ async def query_document(req: QueryRequest):
         raise HTTPException(status_code=404, detail="Document not found or empty")
 
     result = generate_answer(req.question, chunks, ai_polishing=req.ai_polishing)
+
+    save_chat(
+        doc_id=req.doc_id,
+        question=req.question,
+        answer=result["answer"],
+        page_refs=result["page_refs"],
+        follow_ups=result["follow_ups"],
+        ai_polishing=req.ai_polishing,
+        web_grounded=result["web_grounded"],
+    )
+
     return result
+
+
+@app.get("/history/{doc_id}")
+async def get_history(doc_id: str):
+    chats = get_chats_for_document(doc_id)
+    return {"chats": chats}
+
+
+@app.get("/documents")
+async def list_documents():
+    docs = get_all_documents()
+    return {"documents": docs}
 
 
 @app.delete("/document/{doc_id}")
