@@ -27,6 +27,9 @@ Instructions:
 - Polish the answer: make it clear, well-structured, and professional.
 - Then generate exactly 3 relevant follow-up questions the user might ask next.
 - Indicate whether you used outside knowledge beyond the provided context.
+- Do not fabricate information. If unsure, state that the answer is based on limited context.
+- Only add related page numbers in the "page_refs" field. Do not add page numbers that are not directly relevant to the answer.
+
 
 Respond ONLY in this JSON format, no markdown, no extra text:
 {{
@@ -48,6 +51,7 @@ Instructions:
 - Do not use outside knowledge.
 - Keep the answer concise and factual.
 - Then generate exactly 3 relevant follow-up questions the user might ask next.
+- Only add related page numbers in the "page_refs" field. Do not add page numbers that are not directly relevant to the answer.
 
 Respond ONLY in this JSON format, no markdown, no extra text:
 {{
