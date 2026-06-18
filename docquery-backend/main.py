@@ -12,12 +12,14 @@ app = FastAPI(title="DocQuery API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "https://pdf-intelligence-phi.vercel.app/",  # replace with your actual URL
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 class QueryRequest(BaseModel):
     doc_id: str
